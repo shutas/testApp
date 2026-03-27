@@ -13,13 +13,22 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  min-height: 100dvh;
   user-select: none;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #game-container {
   display: flex;
   gap: 24px;
   align-items: flex-start;
+}
+
+#main-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #board-wrapper {
@@ -50,7 +59,7 @@ body {
 
 #overlay-content h2 {
   font-size: 28px;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
   letter-spacing: 2px;
 }
 
@@ -112,4 +121,140 @@ body {
   color: #555;
   font-size: 12px;
   text-align: center;
+}
+
+/* --- Mobile-only elements hidden on desktop --- */
+#top-bar,
+#stats-bar,
+#touch-controls {
+  display: none;
+}
+
+/* --- Responsive: narrow screens --- */
+@media (max-width: 600px) {
+  body {
+    justify-content: flex-start;
+    padding-top: 8px;
+  }
+
+  #game-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  #sidebar-left,
+  #sidebar-right,
+  #controls-hint {
+    display: none;
+  }
+
+  #top-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 6px;
+    justify-content: center;
+  }
+
+  .panel-compact {
+    border: 1px solid #444;
+    padding: 6px 10px;
+    text-align: center;
+  }
+
+  .panel-compact h3 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  .panel-compact canvas {
+    display: block;
+    margin: 0 auto;
+  }
+
+  #stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-top: 6px;
+    justify-content: center;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+  }
+
+  .stat span:not(.stat-label) {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  #touch-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  #touch-row-top,
+  #touch-row-mid,
+  #touch-row-bot {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .touch-btn {
+    width: 56px;
+    height: 48px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .touch-btn[data-action="hold"] {
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .touch-btn[data-action="drop"] {
+    background: #333;
+  }
+
+  .touch-btn:active {
+    background: #555;
+  }
+
+  #overlay-content h2 {
+    font-size: 22px;
+  }
+
+  #overlay-content p {
+    font-size: 14px;
+  }
+
+  #restart-btn {
+    padding: 8px 20px;
+    font-size: 14px;
+  }
 }

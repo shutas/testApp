@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Shuta Suzuki | Stack Game</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" href="style.css">
@@ -10,42 +10,74 @@
 <body>
   <div id="game-container">
     <div id="sidebar-left">
-      <div class="panel">
+      <div class="panel" id="panel-hold">
         <h3>Hold</h3>
-        <canvas id="hold-canvas" width="100" height="80"></canvas>
+        <canvas id="hold-canvas"></canvas>
       </div>
     </div>
-    <div id="board-wrapper">
-      <canvas id="board"></canvas>
-      <div id="overlay" class="hidden">
-        <div id="overlay-content">
-          <h2 id="overlay-title">Game Over</h2>
-          <p id="overlay-score"></p>
-          <button id="restart-btn">Play Again</button>
+    <div id="main-column">
+      <div id="top-bar">
+        <div class="panel panel-compact" id="top-hold">
+          <h3>Hold</h3>
+          <canvas id="hold-canvas-mobile"></canvas>
         </div>
+        <div class="panel panel-compact" id="top-next">
+          <h3>Next</h3>
+          <canvas id="next-canvas-mobile"></canvas>
+        </div>
+      </div>
+      <div id="board-wrapper">
+        <canvas id="board"></canvas>
+        <div id="overlay" class="hidden">
+          <div id="overlay-content">
+            <h2 id="overlay-title">Game Over</h2>
+            <p id="overlay-score"></p>
+            <button id="restart-btn">Play Again</button>
+          </div>
+        </div>
+      </div>
+      <div id="stats-bar">
+        <div class="stat"><span class="stat-label">Score</span><span id="score">0</span></div>
+        <div class="stat"><span class="stat-label">Best</span><span id="high-score">0</span></div>
+        <div class="stat"><span class="stat-label">Lvl</span><span id="level">1</span></div>
+        <div class="stat"><span class="stat-label">Lines</span><span id="lines">0</span></div>
       </div>
     </div>
     <div id="sidebar-right">
       <div class="panel">
         <h3>Next</h3>
-        <canvas id="next-canvas" width="100" height="80"></canvas>
+        <canvas id="next-canvas"></canvas>
       </div>
       <div class="panel">
         <h3>Score</h3>
-        <p id="score">0</p>
+        <p id="score-desktop">0</p>
       </div>
       <div class="panel">
         <h3>High Score</h3>
-        <p id="high-score">0</p>
+        <p id="high-score-desktop">0</p>
       </div>
       <div class="panel">
         <h3>Level</h3>
-        <p id="level">1</p>
+        <p id="level-desktop">1</p>
       </div>
       <div class="panel">
         <h3>Lines</h3>
-        <p id="lines">0</p>
+        <p id="lines-desktop">0</p>
       </div>
+    </div>
+  </div>
+  <div id="touch-controls">
+    <div id="touch-row-top">
+      <button class="touch-btn" data-action="rotate">&#8593;</button>
+      <button class="touch-btn" data-action="hold">Hold</button>
+    </div>
+    <div id="touch-row-mid">
+      <button class="touch-btn" data-action="left">&#8592;</button>
+      <button class="touch-btn" data-action="drop">&#9660;</button>
+      <button class="touch-btn" data-action="right">&#8594;</button>
+    </div>
+    <div id="touch-row-bot">
+      <button class="touch-btn" data-action="down">&#8595;</button>
     </div>
   </div>
   <div id="controls-hint">

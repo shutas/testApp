@@ -3,10 +3,14 @@
 
   const COLS = 10;
   const ROWS = 20;
-  const BLOCK = 28;
-  const PREVIEW_BLOCK = 18;
   const LOCK_DELAY_MS = 500;
   const LINES_PER_LEVEL = 10;
+  const DAS_DELAY = 170;
+  const DAS_REPEAT = 50;
+  const MOBILE_BREAKPOINT = 600;
+
+  let BLOCK = 28;
+  let PREVIEW_BLOCK = 18;
 
   const SHAPES = {
     I: [[0, 0], [1, 0], [2, 0], [3, 0]],
@@ -47,18 +51,26 @@
 
   const canvas = document.getElementById("board");
   const ctx = canvas.getContext("2d");
-  canvas.width = COLS * BLOCK;
-  canvas.height = ROWS * BLOCK;
 
   const nextCanvas = document.getElementById("next-canvas");
   const nextCtx = nextCanvas.getContext("2d");
   const holdCanvas = document.getElementById("hold-canvas");
   const holdCtx = holdCanvas.getContext("2d");
 
+  const nextCanvasMobile = document.getElementById("next-canvas-mobile");
+  const nextCtxMobile = nextCanvasMobile.getContext("2d");
+  const holdCanvasMobile = document.getElementById("hold-canvas-mobile");
+  const holdCtxMobile = holdCanvasMobile.getContext("2d");
+
   const scoreEl = document.getElementById("score");
   const highScoreEl = document.getElementById("high-score");
   const levelEl = document.getElementById("level");
   const linesEl = document.getElementById("lines");
+  const scoreDesktopEl = document.getElementById("score-desktop");
+  const highScoreDesktopEl = document.getElementById("high-score-desktop");
+  const levelDesktopEl = document.getElementById("level-desktop");
+  const linesDesktopEl = document.getElementById("lines-desktop");
+
   const overlay = document.getElementById("overlay");
   const overlayTitle = document.getElementById("overlay-title");
   const overlayScore = document.getElementById("overlay-score");
@@ -70,11 +82,62 @@
   let lastTime, running, gameOver;
   let keyState;
 
-  const DAS_DELAY = 170;
-  const DAS_REPEAT = 50;
-
   highScore = Number(sessionStorage.getItem("tetrisHighScore")) || 0;
   highScoreEl.textContent = highScore;
+  highScoreDesktopEl.textContent = highScore;
+
+  function isMobile() {
+    return window.innerWidth <= MOBILE_BREAKPOINT;
+  }
+
+  function computeBlockSize() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    if (isMobile()) {
+      const topBarHeight = 60;
+      const statsBarHeight = 40;
+      const touchControlsHeight = 160;
+      const padding = 30;
+      const availH = vh - topBarHeight - statsBarHeight - touchControlsHeight - padding;
+      const availW = vw - 16;
+      BLOCK = Math.floor(Math.min(availW / COLS, availH / ROWS));
+      BLOCK = Math.max(BLOCK, 12);
+      PREVIEW_BLOCK = Math.max(Math.floor(BLOCK * 0.6), 10);
+    } else {
+      const sidebarWidth = 120;
+      const gaps = 48;
+      const availW = vw - sidebarWidth * 2 - gaps - 40;
+      const availH = vh - 80;
+      BLOCK = Math.floor(Math.min(availW / COLS, availH / ROWS));
+      BLOCK = Math.min(BLOCK, 32);
+      BLOCK = Math.max(BLOCK, 16);
+      PREVIEW_BLOCK = 18;
+    }
+  }
+
+  function sizeCanvases() {
+    canvas.width = COLS * BLOCK;
+    canvas.height = ROWS * BLOCK;
+
+    const pw = PREVIEW_BLOCK * 5;
+    const ph = PREVIEW_BLOCK * 3;
+
+    nextCanvas.width = pw;
+    nextCanvas.height = ph;
+    holdCanvas.width = pw;
+    holdCanvas.height = ph;
+    nextCanvasMobile.width = pw;
+    nextCanvasMobile.height = ph;
+    holdCanvasMobile.width = pw;
+    holdCanvasMobile.height = ph;
+  }
+
+  function handleResize() {
+    computeBlockSize();
+    sizeCanvases();
+    if (board) render();
+  }
 
   function createBoard() {
     return Array.from({ length: ROWS }, () => new Array(COLS).fill(0));
@@ -95,15 +158,13 @@
   }
 
   function createPiece(name) {
-    const cells = SHAPES[name].map(([x, y]) => [x, y]);
-    const p = {
+    return {
       name,
-      cells,
+      cells: SHAPES[name].map(([x, y]) => [x, y]),
       x: Math.floor((COLS - 4) / 2),
       y: 0,
       rotation: 0,
     };
-    return p;
   }
 
   function rotatedCells(cells, times) {
@@ -169,7 +230,6 @@
     piece.rotation = 0;
     nextPiece = getNextFromBag();
     lockTimer = null;
-
     if (!isValid(piece)) {
       endGame();
     }
@@ -182,6 +242,7 @@
       highScore = score;
       sessionStorage.setItem("tetrisHighScore", String(highScore));
       highScoreEl.textContent = highScore;
+      highScoreDesktopEl.textContent = highScore;
     }
     overlayTitle.textContent = "Game Over";
     overlayScore.textContent = "Score: " + score;
@@ -214,7 +275,6 @@
 
   function tryRotate(dir) {
     if (piece.name === "O") return;
-
     const oldRot = piece.rotation;
     const newRot = (oldRot + dir + 4) % 4;
     const kickTable = piece.name === "I" ? WALL_KICKS.I : WALL_KICKS.normal;
@@ -335,6 +395,11 @@
     scoreEl.textContent = score;
     levelEl.textContent = level;
     linesEl.textContent = totalLines;
+    highScoreEl.textContent = highScore;
+    scoreDesktopEl.textContent = score;
+    levelDesktopEl.textContent = level;
+    linesDesktopEl.textContent = totalLines;
+    highScoreDesktopEl.textContent = highScore;
   }
 
   function render() {
@@ -345,6 +410,8 @@
     }
     drawPreview(nextCtx, nextPiece, nextCanvas);
     drawPreview(holdCtx, holdPiece, holdCanvas);
+    drawPreview(nextCtxMobile, nextPiece, nextCanvasMobile);
+    drawPreview(holdCtxMobile, holdPiece, holdCanvasMobile);
   }
 
   function update(dt) {
@@ -382,6 +449,9 @@
   }
 
   function startGame() {
+    computeBlockSize();
+    sizeCanvases();
+
     board = createBoard();
     bag = shuffleBag();
     score = 0;
@@ -500,7 +570,76 @@
     }
   });
 
+  /* --- Touch controls --- */
+  const touchActions = {
+    left() { tryMove(-1, 0); },
+    right() { tryMove(1, 0); },
+    down() {
+      if (tryMove(0, 1)) {
+        score += 1;
+        updateUI();
+      }
+    },
+    rotate() { tryRotate(1); },
+    drop() { hardDrop(); },
+    hold() { hold(); },
+  };
+
+  let touchRepeatId = null;
+
+  function stopTouchRepeat() {
+    if (touchRepeatId !== null) {
+      clearInterval(touchRepeatId);
+      touchRepeatId = null;
+    }
+  }
+
+  function startBtnAction(action) {
+    if (gameOver || !running) return;
+    const fn = touchActions[action];
+    if (!fn) return;
+    fn();
+
+    if (action === "left" || action === "right" || action === "down") {
+      stopTouchRepeat();
+      touchRepeatId = setInterval(fn, 100);
+    }
+  }
+
+  document.querySelectorAll(".touch-btn").forEach((btn) => {
+    const action = btn.dataset.action;
+
+    btn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      startBtnAction(action);
+    }, { passive: false });
+
+    btn.addEventListener("touchend", (e) => {
+      e.preventDefault();
+      stopTouchRepeat();
+    });
+
+    btn.addEventListener("touchcancel", () => {
+      stopTouchRepeat();
+    });
+
+    btn.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+      startBtnAction(action);
+    });
+
+    btn.addEventListener("mouseup", () => {
+      stopTouchRepeat();
+    });
+
+    btn.addEventListener("mouseleave", () => {
+      stopTouchRepeat();
+    });
+  });
+
   restartBtn.addEventListener("click", startGame);
+
+  window.addEventListener("resize", handleResize);
 
   startGame();
 })();
