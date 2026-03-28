@@ -157,7 +157,7 @@ body {
   }
 
   .panel-compact {
-    border: 1px solid #444;
+    border: 1px solid var(--panel-border);
     padding: 6px 10px;
     text-align: center;
   }
@@ -166,7 +166,7 @@ body {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #888;
+    color: var(--label);
     margin-bottom: 4px;
   }
 
@@ -191,7 +191,7 @@ body {
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #888;
+    color: var(--label);
   }
 
   .stat span:not(.stat-label) {
@@ -201,26 +201,38 @@ body {
 
   #touch-controls {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    margin-top: 10px;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    padding: 0 16px;
+    margin-top: 12px;
   }
 
-  #touch-row-top,
-  #touch-row-mid,
-  #touch-row-bot {
+  #touch-left {
     display: flex;
+    flex-direction: column;
     gap: 8px;
+  }
+
+  #touch-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .dpad-row {
+    display: flex;
+    gap: 4px;
     justify-content: center;
   }
 
   .touch-btn {
     width: 56px;
     height: 48px;
-    background: #222;
-    color: #fff;
-    border: 1px solid #555;
+    background: var(--touch-bg);
+    color: var(--fg);
+    border: 1px solid var(--touch-border);
     border-radius: 6px;
     font-family: inherit;
     font-size: 20px;
@@ -230,19 +242,25 @@ body {
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
 
-  .touch-btn[data-action="hold"] {
+  .touch-btn[data-action="hold"],
+  .touch-btn[data-action="rotate"],
+  .touch-btn[data-action="drop"] {
     font-size: 13px;
     letter-spacing: 1px;
+    width: auto;
+    padding: 0 16px;
   }
 
-  .touch-btn[data-action="drop"] {
-    background: #333;
+  .dpad-btn {
+    width: 52px;
+    height: 44px;
   }
 
   .touch-btn:active {
-    background: #555;
+    background: var(--touch-active);
   }
 
   #overlay-content h2 {

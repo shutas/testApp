@@ -580,6 +580,7 @@
         updateUI();
       }
     },
+    up() { tryRotate(1); },
     rotate() { tryRotate(1); },
     drop() { hardDrop(); },
     hold() { hold(); },
