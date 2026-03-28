@@ -1,3 +1,29 @@
+:root {
+  --bg: #000;
+  --fg: #fff;
+  --grid: #1a1a1a;
+  --ghost: #444;
+  --panel-border: #444;
+  --label: #888;
+  --hint: #555;
+  --overlay-bg: rgba(0, 0, 0, 0.85);
+  --touch-bg: #333;
+  --touch-active: #666;
+}
+
+body.light-mode {
+  --bg: #fff;
+  --fg: #000;
+  --grid: #e5e5e5;
+  --ghost: #bbb;
+  --panel-border: #bbb;
+  --label: #777;
+  --hint: #aaa;
+  --overlay-bg: rgba(255, 255, 255, 0.85);
+  --touch-bg: #ccc;
+  --touch-active: #999;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,8 +31,8 @@
 }
 
 body {
-  background: #000;
-  color: #fff;
+  background: var(--bg);
+  color: var(--fg);
   font-family: "Courier New", Courier, monospace;
   display: flex;
   flex-direction: column;
@@ -17,6 +43,27 @@ body {
   user-select: none;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+#theme-toggle {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  padding: 6px 12px;
+  background-color: var(--fg);
+  color: var(--bg);
+  border: 2px solid var(--fg);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+#theme-toggle:hover {
+  opacity: 0.8;
 }
 
 #game-container {
@@ -37,7 +84,7 @@ body {
 }
 
 #board {
-  border: 2px solid #fff;
+  border: 2px solid var(--fg);
 }
 
 #overlay {
@@ -46,7 +93,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--overlay-bg);
 }
 
 #overlay.hidden {
@@ -69,18 +116,19 @@ body {
 }
 
 #restart-btn {
-  background: #fff;
-  color: #000;
+  background: var(--fg);
+  color: var(--bg);
   border: none;
   padding: 10px 28px;
   font-family: inherit;
   font-size: 16px;
   cursor: pointer;
   letter-spacing: 1px;
+  transition: all 0.3s ease;
 }
 
 #restart-btn:hover {
-  background: #ccc;
+  opacity: 0.8;
 }
 
 #sidebar-left,
@@ -93,7 +141,7 @@ body {
 }
 
 .panel {
-  border: 1px solid #444;
+  border: 1px solid var(--panel-border);
   padding: 10px;
   text-align: center;
 }
@@ -102,7 +150,7 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: #888;
+  color: var(--label);
   margin-bottom: 8px;
 }
 
@@ -118,7 +166,7 @@ body {
 
 #controls-hint {
   margin-top: 20px;
-  color: #555;
+  color: var(--hint);
   font-size: 12px;
   text-align: center;
 }
@@ -135,6 +183,14 @@ body {
   body {
     justify-content: flex-start;
     padding-top: 8px;
+  }
+
+  #theme-toggle {
+    position: fixed;
+    top: 4px;
+    right: 6px;
+    font-size: 12px;
+    padding: 4px 8px;
   }
 
   #game-container {
@@ -232,7 +288,7 @@ body {
     height: 48px;
     background: var(--touch-bg);
     color: var(--fg);
-    border: 1px solid var(--touch-border);
+    border: 2px solid var(--fg);
     border-radius: 6px;
     font-family: inherit;
     font-size: 20px;
@@ -246,7 +302,6 @@ body {
   }
 
   .touch-btn[data-action="hold"],
-  .touch-btn[data-action="rotate"],
   .touch-btn[data-action="drop"] {
     font-size: 13px;
     letter-spacing: 1px;
