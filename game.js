@@ -587,6 +587,8 @@
   };
 
   let touchRepeatId = null;
+  const TOUCH_COOLDOWN_MS = 80;
+  const lastTapTime = {};
 
   function stopTouchRepeat() {
     if (touchRepeatId !== null) {
@@ -597,6 +599,11 @@
 
   function startBtnAction(action) {
     if (gameOver || !running) return;
+
+    const now = performance.now();
+    if (now - (lastTapTime[action] || 0) < TOUCH_COOLDOWN_MS) return;
+    lastTapTime[action] = now;
+
     const fn = touchActions[action];
     if (!fn) return;
     fn();
