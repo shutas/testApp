@@ -587,7 +587,7 @@
   };
 
   let touchRepeatId = null;
-  const TOUCH_COOLDOWN_MS = 120;
+  const TOUCH_COOLDOWN_MS = 180;
   const lastTapTime = {};
 
   function stopTouchRepeat() {
