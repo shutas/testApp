@@ -97,9 +97,10 @@
     if (isMobile()) {
       const topBarHeight = 60;
       const statsBarHeight = 40;
-      const touchControlsHeight = 160;
+      const gestureHintHeight = 48;
+      const holdBtnHeight = 52;
       const padding = 30;
-      const availH = vh - topBarHeight - statsBarHeight - touchControlsHeight - padding;
+      const availH = vh - topBarHeight - statsBarHeight - gestureHintHeight - holdBtnHeight - padding;
       const availW = vw - 16;
       BLOCK = Math.floor(Math.min(availW / COLS, availH / ROWS));
       BLOCK = Math.max(BLOCK, 12);
@@ -570,80 +571,139 @@
     }
   });
 
-  /* --- Touch controls --- */
-  const touchActions = {
-    left() { tryMove(-1, 0); },
-    right() { tryMove(1, 0); },
-    down() {
-      if (tryMove(0, 1)) {
-        score += 1;
-        updateUI();
-      }
-    },
-    up() { tryRotate(1); },
-    rotate() { tryRotate(1); },
-    drop() { hardDrop(); },
-    hold() { hold(); },
-  };
+  /* --- Touch gesture controls --- */
+  const SWIPE_THRESHOLD = 30;
+  const TAP_MAX_DIST = 15;
+  const TAP_MAX_TIME = 200;
+  const HARD_DROP_SPEED = 1.2;
+  const SOFT_DROP_INTERVAL = 80;
 
-  let touchRepeatId = null;
-  const TOUCH_COOLDOWN_MS = 180;
-  const lastTapTime = {};
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let touchId = null;
+  let gestureHandled = false;
+  let softDropInterval = null;
+  let horizontalMoves = 0;
 
-  function stopTouchRepeat() {
-    if (touchRepeatId !== null) {
-      clearInterval(touchRepeatId);
-      touchRepeatId = null;
+  function stopSoftDrop() {
+    if (softDropInterval !== null) {
+      clearInterval(softDropInterval);
+      softDropInterval = null;
     }
   }
 
-  function startBtnAction(action) {
+  const boardWrapper = document.getElementById("board-wrapper");
+
+  boardWrapper.addEventListener("touchstart", (e) => {
+    if (gameOver || !running) return;
+    if (touchId !== null) return;
+    e.preventDefault();
+
+    const touch = e.changedTouches[0];
+    touchId = touch.identifier;
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartTime = performance.now();
+    gestureHandled = false;
+    horizontalMoves = 0;
+  }, { passive: false });
+
+  boardWrapper.addEventListener("touchmove", (e) => {
+    if (gameOver || !running) return;
+    if (touchId === null) return;
+    e.preventDefault();
+
+    let touch = null;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId) {
+        touch = e.changedTouches[i];
+        break;
+      }
+    }
+    if (!touch) return;
+
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    if (absDx > SWIPE_THRESHOLD && absDx > absDy * 1.2) {
+      const dir = dx > 0 ? 1 : -1;
+      const cellsMoved = Math.floor(absDx / SWIPE_THRESHOLD);
+      const movesNeeded = cellsMoved - horizontalMoves;
+      for (let i = 0; i < movesNeeded; i++) {
+        tryMove(dir, 0);
+      }
+      horizontalMoves = cellsMoved;
+      gestureHandled = true;
+    }
+
+    if (absDy > SWIPE_THRESHOLD && dy > 0 && absDy > absDx * 1.5) {
+      if (softDropInterval === null) {
+        gestureHandled = true;
+        softDropInterval = setInterval(() => {
+          if (tryMove(0, 1)) {
+            score += 1;
+            updateUI();
+          }
+        }, SOFT_DROP_INTERVAL);
+      }
+    }
+  }, { passive: false });
+
+  boardWrapper.addEventListener("touchend", (e) => {
+    if (touchId === null) return;
+
+    let touch = null;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId) {
+        touch = e.changedTouches[i];
+        break;
+      }
+    }
+    if (!touch) return;
+
+    e.preventDefault();
+    touchId = null;
+    stopSoftDrop();
+
     if (gameOver || !running) return;
 
-    const now = performance.now();
-    if (now - (lastTapTime[action] || 0) < TOUCH_COOLDOWN_MS) return;
-    lastTapTime[action] = now;
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const elapsed = performance.now() - touchStartTime;
 
-    const fn = touchActions[action];
-    if (!fn) return;
-    fn();
-
-    if (action === "left" || action === "right" || action === "down") {
-      stopTouchRepeat();
-      touchRepeatId = setInterval(fn, 100);
+    if (!gestureHandled && dist <= TAP_MAX_DIST && elapsed <= TAP_MAX_TIME) {
+      tryRotate(1);
+      return;
     }
-  }
 
-  document.querySelectorAll(".touch-btn").forEach((btn) => {
-    const action = btn.dataset.action;
+    if (dy > SWIPE_THRESHOLD && Math.abs(dx) < dy * 0.7) {
+      const speed = dy / elapsed;
+      if (speed >= HARD_DROP_SPEED) {
+        hardDrop();
+      }
+    }
+  }, { passive: false });
 
-    btn.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      startBtnAction(action);
-    }, { passive: false });
-
-    btn.addEventListener("touchend", (e) => {
-      e.preventDefault();
-      stopTouchRepeat();
-    });
-
-    btn.addEventListener("touchcancel", () => {
-      stopTouchRepeat();
-    });
-
-    btn.addEventListener("mousedown", (e) => {
-      e.preventDefault();
-      startBtnAction(action);
-    });
-
-    btn.addEventListener("mouseup", () => {
-      stopTouchRepeat();
-    });
-
-    btn.addEventListener("mouseleave", () => {
-      stopTouchRepeat();
-    });
+  boardWrapper.addEventListener("touchcancel", () => {
+    touchId = null;
+    stopSoftDrop();
   });
+
+  const holdBtn = document.getElementById("hold-btn");
+  if (holdBtn) {
+    holdBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (!gameOver && running) hold();
+    }, { passive: false });
+    holdBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (!gameOver && running) hold();
+    });
+  }
 
   restartBtn.addEventListener("click", startGame);
 
