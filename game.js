@@ -575,7 +575,8 @@
   const SWIPE_THRESHOLD = 30;
   const TAP_MAX_DIST = 15;
   const TAP_MAX_TIME = 200;
-  const HARD_DROP_SPEED = 1.2;
+  const HARD_DROP_SPEED = 0.8;
+  const SOFT_DROP_DELAY = 200;
   const SOFT_DROP_INTERVAL = 80;
 
   let touchStartX = 0;
@@ -584,9 +585,15 @@
   let touchId = null;
   let gestureHandled = false;
   let softDropInterval = null;
+  let softDropTimeout = null;
   let horizontalMoves = 0;
+  let downwardSwipeDetected = false;
 
   function stopSoftDrop() {
+    if (softDropTimeout !== null) {
+      clearTimeout(softDropTimeout);
+      softDropTimeout = null;
+    }
     if (softDropInterval !== null) {
       clearInterval(softDropInterval);
       softDropInterval = null;
@@ -607,6 +614,7 @@
     touchStartTime = performance.now();
     gestureHandled = false;
     horizontalMoves = 0;
+    downwardSwipeDetected = false;
   }, { passive: false });
 
   boardWrapper.addEventListener("touchmove", (e) => {
@@ -640,14 +648,19 @@
     }
 
     if (absDy > SWIPE_THRESHOLD && dy > 0 && absDy > absDx * 1.5) {
-      if (softDropInterval === null) {
+      if (!downwardSwipeDetected) {
+        downwardSwipeDetected = true;
         gestureHandled = true;
-        softDropInterval = setInterval(() => {
-          if (tryMove(0, 1)) {
-            score += 1;
-            updateUI();
-          }
-        }, SOFT_DROP_INTERVAL);
+        softDropTimeout = setTimeout(() => {
+          softDropTimeout = null;
+          if (touchId === null) return;
+          softDropInterval = setInterval(() => {
+            if (tryMove(0, 1)) {
+              score += 1;
+              updateUI();
+            }
+          }, SOFT_DROP_INTERVAL);
+        }, SOFT_DROP_DELAY);
       }
     }
   }, { passive: false });
@@ -665,6 +678,7 @@
     if (!touch) return;
 
     e.preventDefault();
+    const wasSoftDropping = softDropInterval !== null;
     touchId = null;
     stopSoftDrop();
 
@@ -680,7 +694,7 @@
       return;
     }
 
-    if (dy > SWIPE_THRESHOLD && Math.abs(dx) < dy * 0.7) {
+    if (dy > SWIPE_THRESHOLD && Math.abs(dx) < dy * 0.7 && !wasSoftDropping) {
       const speed = dy / elapsed;
       if (speed >= HARD_DROP_SPEED) {
         hardDrop();
