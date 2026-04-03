@@ -164,6 +164,35 @@ body {
   margin: 0 auto;
 }
 
+#offline-btn {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--hint);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+#offline-btn:hover {
+  color: var(--fg);
+  border-color: var(--fg);
+}
+
+#offline-btn.installed {
+  color: var(--hint);
+  border-color: var(--panel-border);
+  cursor: default;
+  opacity: 0.6;
+}
+
 #controls-hint {
   margin-top: 20px;
   color: var(--hint);
@@ -191,6 +220,14 @@ body {
     right: 6px;
     font-size: 12px;
     padding: 4px 8px;
+  }
+
+  #offline-btn {
+    position: fixed;
+    top: 4px;
+    left: 6px;
+    font-size: 11px;
+    padding: 4px 10px;
   }
 
   #game-container {

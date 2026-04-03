@@ -601,9 +601,10 @@
   }
 
   const holdBtn = document.getElementById("hold-btn");
+  const offlineBtn = document.getElementById("offline-btn");
 
   function isExcludedTarget(el) {
-    return el === holdBtn || el === restartBtn || (overlay && overlay.contains(el));
+    return el === holdBtn || el === offlineBtn || el === restartBtn || (overlay && overlay.contains(el));
   }
 
   document.addEventListener("touchstart", (e) => {
@@ -724,6 +725,37 @@
   }
 
   restartBtn.addEventListener("click", startGame);
+
+  /* --- Play Offline (PWA install) --- */
+  if (offlineBtn) {
+    const swRegistered = Boolean(navigator.serviceWorker && navigator.serviceWorker.controller);
+
+    if (swRegistered) {
+      offlineBtn.textContent = "Offline Ready";
+      offlineBtn.classList.add("installed");
+    }
+
+    offlineBtn.addEventListener("click", () => {
+      if (offlineBtn.classList.contains("installed")) return;
+      if (!("serviceWorker" in navigator)) {
+        offlineBtn.textContent = "Not Supported";
+        offlineBtn.classList.add("installed");
+        return;
+      }
+
+      offlineBtn.textContent = "Installing\u2026";
+      offlineBtn.disabled = true;
+
+      navigator.serviceWorker.register("./sw.js").then(() => {
+        offlineBtn.textContent = "Offline Ready";
+        offlineBtn.classList.add("installed");
+        offlineBtn.disabled = false;
+      }).catch(() => {
+        offlineBtn.textContent = "Failed";
+        offlineBtn.disabled = false;
+      });
+    });
+  }
 
   window.addEventListener("resize", handleResize);
 
