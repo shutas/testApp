@@ -255,7 +255,7 @@ body {
     font-weight: bold;
   }
 
-  #board-wrapper {
+  body {
     touch-action: none;
   }
 

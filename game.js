@@ -600,11 +600,16 @@
     }
   }
 
-  const boardWrapper = document.getElementById("board-wrapper");
+  const holdBtn = document.getElementById("hold-btn");
 
-  boardWrapper.addEventListener("touchstart", (e) => {
+  function isExcludedTarget(el) {
+    return el === holdBtn || el === restartBtn || (overlay && overlay.contains(el));
+  }
+
+  document.addEventListener("touchstart", (e) => {
     if (gameOver || !running) return;
     if (touchId !== null) return;
+    if (isExcludedTarget(e.target)) return;
     e.preventDefault();
 
     const touch = e.changedTouches[0];
@@ -617,7 +622,7 @@
     downwardSwipeDetected = false;
   }, { passive: false });
 
-  boardWrapper.addEventListener("touchmove", (e) => {
+  document.addEventListener("touchmove", (e) => {
     if (gameOver || !running) return;
     if (touchId === null) return;
     e.preventDefault();
@@ -665,7 +670,7 @@
     }
   }, { passive: false });
 
-  boardWrapper.addEventListener("touchend", (e) => {
+  document.addEventListener("touchend", (e) => {
     if (touchId === null) return;
 
     let touch = null;
@@ -702,12 +707,11 @@
     }
   }, { passive: false });
 
-  boardWrapper.addEventListener("touchcancel", () => {
+  document.addEventListener("touchcancel", () => {
     touchId = null;
     stopSoftDrop();
   });
 
-  const holdBtn = document.getElementById("hold-btn");
   if (holdBtn) {
     holdBtn.addEventListener("touchstart", (e) => {
       e.preventDefault();
