@@ -602,9 +602,10 @@
 
   const holdBtn = document.getElementById("hold-btn");
   const offlineBtn = document.getElementById("offline-btn");
+  const offlineBtnMobile = document.getElementById("offline-btn-mobile");
 
   function isExcludedTarget(el) {
-    return el === holdBtn || el === offlineBtn || el === restartBtn || (overlay && overlay.contains(el));
+    return el === holdBtn || el === offlineBtn || el === offlineBtnMobile || el === restartBtn || (overlay && overlay.contains(el));
   }
 
   document.addEventListener("touchstart", (e) => {
@@ -727,34 +728,37 @@
   restartBtn.addEventListener("click", startGame);
 
   /* --- Play Offline (PWA install) --- */
-  if (offlineBtn) {
-    const swRegistered = Boolean(navigator.serviceWorker && navigator.serviceWorker.controller);
+  const offlineBtns = [offlineBtn, offlineBtnMobile].filter(Boolean);
 
-    if (swRegistered) {
-      offlineBtn.textContent = "Offline Ready";
-      offlineBtn.classList.add("installed");
+  function setOfflineState(text, done) {
+    for (const btn of offlineBtns) {
+      btn.textContent = text;
+      if (done) btn.classList.add("installed");
+      btn.disabled = false;
     }
+  }
 
-    offlineBtn.addEventListener("click", () => {
-      if (offlineBtn.classList.contains("installed")) return;
-      if (!("serviceWorker" in navigator)) {
-        offlineBtn.textContent = "Not Supported";
-        offlineBtn.classList.add("installed");
-        return;
-      }
+  if (offlineBtns.length > 0) {
+    const swRegistered = Boolean(navigator.serviceWorker && navigator.serviceWorker.controller);
+    if (swRegistered) setOfflineState("Offline Ready", true);
 
-      offlineBtn.textContent = "Installing\u2026";
-      offlineBtn.disabled = true;
+    for (const btn of offlineBtns) {
+      btn.addEventListener("click", () => {
+        if (btn.classList.contains("installed")) return;
+        if (!("serviceWorker" in navigator)) {
+          setOfflineState("Not Supported", true);
+          return;
+        }
 
-      navigator.serviceWorker.register("./sw.js").then(() => {
-        offlineBtn.textContent = "Offline Ready";
-        offlineBtn.classList.add("installed");
-        offlineBtn.disabled = false;
-      }).catch(() => {
-        offlineBtn.textContent = "Failed";
-        offlineBtn.disabled = false;
+        for (const b of offlineBtns) { b.textContent = "Installing\u2026"; b.disabled = true; }
+
+        navigator.serviceWorker.register("./sw.js").then(() => {
+          setOfflineState("Offline Ready", true);
+        }).catch(() => {
+          setOfflineState("Failed", false);
+        });
       });
-    });
+    }
   }
 
   window.addEventListener("resize", handleResize);

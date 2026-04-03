@@ -200,6 +200,10 @@ body {
   text-align: center;
 }
 
+.mobile-only {
+  display: none;
+}
+
 /* --- Mobile-only elements hidden on desktop --- */
 #top-bar,
 #stats-bar,
@@ -222,12 +226,34 @@ body {
     padding: 4px 8px;
   }
 
-  #offline-btn {
-    position: fixed;
-    top: 4px;
-    left: 6px;
+  #offline-btn-mobile {
+    height: 40px;
+    padding: 0 14px;
+    background: transparent;
+    color: var(--hint);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    font-family: inherit;
     font-size: 11px;
-    padding: 4px 10px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    flex-shrink: 0;
+  }
+
+  #offline-btn-mobile:hover {
+    color: var(--fg);
+    border-color: var(--fg);
+  }
+
+  #offline-btn-mobile.installed {
+    color: var(--hint);
+    border-color: var(--panel-border);
+    cursor: default;
+    opacity: 0.6;
   }
 
   #game-container {
@@ -238,8 +264,13 @@ body {
 
   #sidebar-left,
   #sidebar-right,
-  #controls-hint {
+  #controls-hint,
+  .desktop-only {
     display: none;
+  }
+
+  .mobile-only {
+    display: flex;
   }
 
   #top-bar {
